@@ -29,7 +29,23 @@ namespace MDoumaAssignment1
         }
         int boxNumber;
         string boxSelected;
+        int[] boxPosition = new int[2];
         int numberOfMoves;
+        int columnNumber;
+        int rowNumber;
+        string[][] gameGrid;
+        string boxColour;
+        Direction direction;
+
+        enum Direction
+        {
+            UP,
+            DOWN,
+            LEFT,
+            RIGHT,
+            NONE
+        }
+
 
         //Deletes the previous grid by removing all of the pictureboxes
         public void DeleteGrid()
@@ -47,6 +63,7 @@ namespace MDoumaAssignment1
                 }
             }
             numberOfMoves = 0;
+            lblSelectedBox.Text = "Selected: None";
         }
 
         //looks at the position of the selected box and predicts its
@@ -56,43 +73,44 @@ namespace MDoumaAssignment1
         //either empty or a door of the same colour
         //if there are no more boxes then it will display a message
         //and delete the grid
-        public void Movement(string futurePosition, string boxPosition, string boxColour)
+        public void Movement(int[] futurePosition, string boxColour)
         {
             foreach (Control control in Controls)
             {
-                if (control.Name.StartsWith(futurePosition) && control.Name.Contains("Empty"))
+                if (control.Name.StartsWith("grid" + futurePosition[0].ToString() + futurePosition[1].ToString()) && control.Name.Contains("Empty"))
                 {
                     ((PictureBox)Controls[boxSelected]).Image = null;
-                    ((PictureBox)Controls[boxSelected]).Name = boxPosition + "Empty";
-                    boxSelected = futurePosition + boxSelected.Remove(0, 6);
+                    ((PictureBox)Controls[boxSelected]).Name = boxPosition[0].ToString() + boxPosition[1].ToString() + "Empty";
+                    boxPosition[0] = futurePosition[0];
+                    boxPosition[1] = futurePosition[1];
                     (control as PictureBox).Name = boxSelected;
                     switch (boxColour)
                     {
-                        case "Red---":
+                        case "Red":
                             (control as PictureBox).Image = Properties.Resources.redBox;
                             break;
-                        case "Blue--":
+                        case "Blue":
                             (control as PictureBox).Image = Properties.Resources.blueBox;
                             break;
                         case "Yellow":
                             (control as PictureBox).Image = Properties.Resources.yellowBox;
                             break;
-                        case "Green-":
+                        case "Green":
                             (control as PictureBox).Image = Properties.Resources.greenBox;
                             break;
                     }
                     numberOfMoves++;
-                    txtNumberOfMoves.Text = numberOfMoves.ToString();
+                    txtNumberOfMoves.Text = numberOfMoves.ToString() + boxPosition[0].ToString() + boxPosition[1].ToString();
                 }
                 //when a box goes to a door it checks if it is the same colour and if so,
                 //removes the box
                 //if all boxes are removed then display win message
-                else if (control.Name.StartsWith(futurePosition) && control.Name.Contains("Door"))
+                else if (control.Name.StartsWith("grid" + futurePosition[0].ToString() + futurePosition[1].ToString()) && control.Name.Contains("Door"))
                 {
                     string doorColour = control.Name.Substring(6, 6);
+                    doorColour.Replace("-", "");
                     if (boxColour == doorColour)
                     {
-
                         ((PictureBox)Controls[boxSelected]).Image = null;
                         ((PictureBox)Controls[boxSelected]).Name = boxPosition + "Empty";
                         boxSelected = "";
@@ -104,8 +122,8 @@ namespace MDoumaAssignment1
                         }
                     }
                 }
-
             }
+            direction = Direction.NONE;
         }
   
         // sets the first two lines in the file as the grid size
@@ -114,8 +132,9 @@ namespace MDoumaAssignment1
         private void loadFile(string filename)
         {
             StreamReader reader = new StreamReader(filename);
-            int rowNumber = int.Parse(reader.ReadLine());
-            int columnNumber = int.Parse(reader.ReadLine());           
+            rowNumber = int.Parse(reader.ReadLine());
+            columnNumber = int.Parse(reader.ReadLine());
+            gameGrid = new string[rowNumber][];
             const int ORIGINPOINT = 148;
             const int TILESIZE = 70;
             int originPointX = ORIGINPOINT;
@@ -124,20 +143,27 @@ namespace MDoumaAssignment1
             int wallNumber = 0;
             int doorNumber = 0;
             boxNumber = 0;
+            boxColour = "";
+            boxSelected = "";
+            boxPosition[0] = -1;
+            boxPosition[1] = -1;
             try
             {
                 DeleteGrid();
                 for (int i = 0; i < rowNumber; i++)
                 {
+                    gameGrid[i] = new string[columnNumber];
                     for (int j = 0; j < columnNumber; j++)
                     {
                         PictureBox grid = new PictureBox();
+                        
                         grid.Name = "grid" + reader.ReadLine() + reader.ReadLine();
                         grid.Size = new Size(TILESIZE, TILESIZE);
                         grid.BackColor = Color.Gray;
                         grid.BorderStyle = BorderStyle.Fixed3D;
                         grid.Location = new Point(originPointX, originPointY);
                         grid.Click += new EventHandler(selectBox_Click);
+
                         switch (reader.ReadLine())
                         {
 
@@ -145,51 +171,61 @@ namespace MDoumaAssignment1
                                 grid.Image = null;
                                 emptyNumber++;
                                 grid.Name += "Empty" + emptyNumber;
+                                gameGrid[i][j] = "Empty";
                                 break;
                             case "1":
                                 grid.Image = Properties.Resources.wall;
                                 wallNumber++;
                                 grid.Name += "Wall" + wallNumber;
+                                gameGrid[i][j] = "Wall";
                                 break;
                             case "2":
                                 grid.Image = Properties.Resources.redDoor;
                                 doorNumber++;
                                 grid.Name += "Red---Door" + doorNumber;
+                                gameGrid[i][j] = "Red---Door";
                                 break;
                             case "3":
                                 grid.Image = Properties.Resources.blueDoor;
                                 doorNumber++;
                                 grid.Name += "Blue--Door" + doorNumber;
+                                gameGrid[i][j] = "Blue--Door";
                                 break;
                             case "4":
                                 grid.Image = Properties.Resources.yellowDoor;
                                 doorNumber++;
                                 grid.Name += "YellowDoor" + doorNumber;
+                                gameGrid[i][j] = "YellowDoor";
                                 break;
                             case "5":
                                 grid.Image = Properties.Resources.greenDoor;
                                 doorNumber++;
                                 grid.Name += "Green-Door" + doorNumber;
+                                gameGrid[i][j] = "Green-Door";
                                 break;
                             case "6":
                                 grid.Image = Properties.Resources.redBox;
                                 boxNumber++;
-                                grid.Name += "Red---Box" + boxNumber;                              
+                                grid.Name += "Red---Box" + boxNumber;
+                                gameGrid[i][j] = "Red---Box";
                                 break;
                             case "7":
                                 grid.Image = Properties.Resources.blueBox;
                                 boxNumber++;
                                 grid.Name += "Blue--Box" + boxNumber;
+                                gameGrid[i][j] = "Blue--Box";
                                 break;
                             case "8":
                                 grid.Image = Properties.Resources.yellowBox;
                                 boxNumber++;
                                 grid.Name += "YellowBox" + boxNumber;
+                                gameGrid[i][j] = "YellowBox";
                                 break;
                             case "9":
                                 grid.Image = Properties.Resources.greenBox;
                                 boxNumber++;
                                 grid.Name += "Green-Box" + boxNumber;
+                                gameGrid[i][j] = "Green-Box";
                                 break;
                         }
                         Controls.Add(grid);
@@ -218,6 +254,12 @@ namespace MDoumaAssignment1
             if ((sender as PictureBox).Name.Contains("Box"))
             {
                 boxSelected = ((sender as PictureBox).Name);
+                boxPosition[0] = int.Parse(boxSelected.Substring(4, 1));
+                boxPosition[1] = int.Parse(boxSelected.Substring(5, 1));
+                boxColour = boxSelected.Substring(6, 6);
+                boxColour.Replace("-", "");
+
+                lblSelectedBox.Text = "Selected: " + boxColour + " box";
             }          
         }
 
@@ -267,12 +309,9 @@ namespace MDoumaAssignment1
         {
             if (boxSelected != null && boxSelected != "")
             {
-                string boxPosition = boxSelected.Remove(6);
-                grid
-                int movement = int.Parse(boxPosition[4].ToString()) - 1;
-                string futurePosition = "grid" + movement.ToString() + boxPosition[5];
-                string boxColour = boxSelected.Substring(6, 6);
-                Movement(futurePosition, boxPosition, boxColour);
+                direction = Direction.UP;
+                int[] futurePosition = FuturePosition();
+                Movement(futurePosition, boxColour);
             }
         }
 
@@ -280,11 +319,9 @@ namespace MDoumaAssignment1
         {
             if (boxSelected != null && boxSelected != "")
             {
-                string boxPosition = boxSelected.Remove(6);
-                int movement = int.Parse(boxPosition[4].ToString()) + 1;
-                string futurePosition = "grid" + movement.ToString() + boxPosition[5];
-                string boxColour = boxSelected.Substring(6, 6);
-                Movement(futurePosition, boxPosition, boxColour);
+                direction = Direction.DOWN;
+                int[] futurePosition = FuturePosition();
+                Movement(futurePosition, boxColour);
             }
         }
 
@@ -292,11 +329,9 @@ namespace MDoumaAssignment1
         {
             if (boxSelected != null && boxSelected != "")
             {
-                string boxPosition = boxSelected.Remove(6);
-                int movement = int.Parse(boxPosition[5].ToString()) - 1;
-                string futurePosition = "grid" + boxPosition[4] + movement.ToString();
-                string boxColour = boxSelected.Substring(6, 6);
-                Movement(futurePosition, boxPosition, boxColour);
+                direction = Direction.LEFT;
+                int[] futurePosition = FuturePosition();
+                Movement(futurePosition, boxColour);
             }
         }
 
@@ -304,12 +339,85 @@ namespace MDoumaAssignment1
         {
             if (boxSelected != null && boxSelected != "")
             {
-                string boxPosition = boxSelected.Remove(6);
-                int movement = int.Parse(boxPosition[5].ToString()) + 1;
-                string futurePosition = "grid" + boxPosition[4] + movement.ToString();
-                string boxColour = boxSelected.Substring(6, 6);
-                Movement(futurePosition, boxPosition, boxColour);
+                direction = Direction.RIGHT;
+                int[] futurePosition = FuturePosition();
+                Movement(futurePosition, boxColour);
             }
+        }
+
+        //looks at selected box position and desired direction and 
+        //returns grid position of the space beside the wall that it hits or the door
+        private int[] FuturePosition()
+        {
+            int[] futurePosition = new int[2];
+            int newPosition = 0;
+
+            if(direction == Direction.DOWN || direction == Direction.UP)
+            {
+                
+                for (int i = boxPosition[0]; i < rowNumber; i++)
+                {
+                    futurePosition[0] = newPosition;
+                    futurePosition[1] = boxPosition[1];
+                    //make sure we dont go out of bounds
+                    if ((i + 1 > rowNumber - 1 && direction == Direction.DOWN) || (i - 1 < 0 && direction == Direction.UP))
+                    {
+                        break;
+                    }
+                    
+                    if (direction == Direction.UP)
+                    {
+                        if (gameGrid[i - 1][boxPosition[1]] != "Empty")
+                        {
+                            break;
+                        }
+                        newPosition = i - 1;
+                    }
+                    else if (direction == Direction.DOWN)
+                    {                       
+                        if (gameGrid[i + 1][boxPosition[1]] != "Empty")
+                        {
+                            break;
+                        }
+                        newPosition = i + 1;
+                    }
+                
+                }
+            }
+            else
+            {
+                
+                for (int i = boxPosition[1]; i < columnNumber; i++)
+                {
+                    futurePosition[0] = boxPosition[0];
+                    futurePosition[1] = newPosition;
+                    
+                    //make sure we dont go out of bounds
+                    if ((i + 1 > columnNumber - 1 && direction == Direction.RIGHT) || (i - 1 < 0 && direction == Direction.LEFT))
+                    {
+                        break;
+                    }                
+                    if (direction == Direction.LEFT)
+                    {                       
+                        if (gameGrid[boxPosition[0]][i - 1] != "Empty")
+                        {
+                                break;
+                        }
+                        newPosition = i - 1;
+                    }
+                    else if (direction == Direction.RIGHT)
+                    {                
+                        if (gameGrid[boxPosition[0]][i + 1] != "Empty")
+                        {
+                                break;
+                        }
+                        newPosition = i + 1;
+                    }
+                    
+                }
+            }
+                    
+            return futurePosition;
         }
     }
 }

@@ -58,3 +58,15 @@ G:\GameData\Assignments\MDoumaAssignment2\MDoumaAssignment1\obj\Debug\MDoumaAssi
 D:\Documents\Games\QGame\MDoumaAssignment2\MDoumaAssignment1\obj\Debug\MDoumaAssignment1.csprojAssemblyReference.cache
 D:\Documents\Games\QGame\MDoumaAssignment2\MDoumaAssignment1\obj\Debug\MDoumaAssignment1.exe
 D:\Documents\Games\QGame\MDoumaAssignment2\MDoumaAssignment1\obj\Debug\MDoumaAssignment1.pdb
+C:\Users\douma\Documents\GitHub\QGame\MDoumaAssignment2\MDoumaAssignment1\obj\Debug\MDoumaAssignment1.csprojAssemblyReference.cache
+C:\Users\douma\Documents\GitHub\QGame\MDoumaAssignment2\MDoumaAssignment1\obj\Debug\MDoumaAssignment1.DesignForm.resources
+C:\Users\douma\Documents\GitHub\QGame\MDoumaAssignment2\MDoumaAssignment1\obj\Debug\MDoumaAssignment1.PlayForm.resources
+C:\Users\douma\Documents\GitHub\QGame\MDoumaAssignment2\MDoumaAssignment1\obj\Debug\MDoumaAssignment1.Properties.Resources.resources
+C:\Users\douma\Documents\GitHub\QGame\MDoumaAssignment2\MDoumaAssignment1\obj\Debug\MDoumaAssignment1.QGameControlPanel.resources
+C:\Users\douma\Documents\GitHub\QGame\MDoumaAssignment2\MDoumaAssignment1\obj\Debug\MDoumaAssignment1.csproj.GenerateResource.cache
+C:\Users\douma\Documents\GitHub\QGame\MDoumaAssignment2\MDoumaAssignment1\obj\Debug\MDoumaAssignment1.csproj.CoreCompileInputs.cache
+C:\Users\douma\Documents\GitHub\QGame\MDoumaAssignment2\MDoumaAssignment1\obj\Debug\MDoumaAssignment1.exe
+C:\Users\douma\Documents\GitHub\QGame\MDoumaAssignment2\MDoumaAssignment1\obj\Debug\MDoumaAssignment1.pdb
+C:\Users\douma\Documents\GitHub\QGame\MDoumaAssignment2\MDoumaAssignment1\bin\Debug\MDoumaAssignment1.exe.config
+C:\Users\douma\Documents\GitHub\QGame\MDoumaAssignment2\MDoumaAssignment1\bin\Debug\MDoumaAssignment1.exe
+C:\Users\douma\Documents\GitHub\QGame\MDoumaAssignment2\MDoumaAssignment1\bin\Debug\MDoumaAssignment1.pdb
