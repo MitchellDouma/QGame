@@ -35,17 +35,15 @@ namespace MDoumaAssignment1
         int rowNumber;
         string[][] gameGrid;
         string boxColour;
-        Direction direction;
 
-        enum Direction
+        private enum Direction
         {
+            NONE,
             UP,
             DOWN,
             LEFT,
-            RIGHT,
-            NONE
+            RIGHT
         }
-
 
         //Deletes the previous grid by removing all of the pictureboxes
         public void DeleteGrid()
@@ -63,69 +61,184 @@ namespace MDoumaAssignment1
                 }
             }
             numberOfMoves = 0;
-            lblSelectedBox.Text = "Selected: None";
+            RemoveBox();
         }
 
-        //looks at the position of the selected box and predicts its
-        //next location by either adding or subtracting 1 from either 
-        //its row position or column position depending on whether its
-        //going up,down, left, or right, but only if the next location
-        //either empty or a door of the same colour
-        //if there are no more boxes then it will display a message
-        //and delete the grid
-        public void Movement(int[] futurePosition, string boxColour)
+        //removes selected box
+        private void RemoveBox()
+        {
+            lblSelectedBox.Text = "Selected: None";
+            boxPosition[0] = -1;
+            boxPosition[1] = -1;
+            boxSelected = "";
+            boxColour = "";
+            ToggleMovementButtons(false);
+        }
+
+        //based on the future position of the box
+        //the sprite of the box of the current position will be removed 
+        //and the sprite will be placed in the future position
+        private void Movement(int futurePosition, Direction direction)
+        {
+            //find the spot where the box is currently 
+            PictureBox currentGridPosition = (PictureBox)FindGridPosition(boxPosition[0], boxPosition[1]);
+            //remove old sprite
+            if (currentGridPosition != null)
+            {
+                //if box is on a door of opposing colour
+                //bring the door sprite back
+                if (gameGrid[boxPosition[0]][boxPosition[1]].Contains("Door"))
+                {
+                    BringBackDoor(currentGridPosition, boxPosition[0], boxPosition[1]);
+                }
+                else
+                {
+                    currentGridPosition.Image = null;
+                    gameGrid[boxPosition[0]][boxPosition[1]] = "Empty";
+                }
+            }
+            //assign position for the box to go to
+            PictureBox futureGridPosition;
+            int placementX;
+            int placementY;
+            if (direction == Direction.UP || direction == Direction.DOWN)
+            {
+                placementX = futurePosition;
+                placementY = boxPosition[1];
+            }
+            else
+            {
+                placementX = boxPosition[0];
+                placementY = futurePosition;
+
+            }
+            futureGridPosition = (PictureBox)FindGridPosition(placementX, placementY);
+            //enter new sprite
+            if (futureGridPosition != null)
+            {
+                //set new box position
+                boxPosition[0] = placementX;
+                boxPosition[1] = placementY;               
+                //add the sprite
+                MoveBox(futureGridPosition);               
+            }
+            WaitMovement(500);
+            //run the functions again until a wall or box is hit
+            switch (direction)
+            {
+                case Direction.UP:
+                    FuturePositionUp();
+                    break;
+                case Direction.DOWN:
+                    FuturePositionDown();
+                    break;
+                case Direction.LEFT:
+                    FuturePositionLeft();
+                    break;
+                case Direction.RIGHT:
+                    FuturePositionRight();
+                    break;
+
+            }
+        }
+
+        //check where the box lands
+        private void StopMovement()
+        {         
+            //if the box stops on the door and they're the same colour
+            //remove the box
+            if (gameGrid[boxPosition[0]][boxPosition[1]].Contains("Door"))
+            {
+                string doorColour = gameGrid[boxPosition[0]][boxPosition[1]].Substring(0, 6).Replace("-", "");
+                if (boxColour == doorColour)
+                {                  
+                    //find the spot where the box is currently 
+                    PictureBox currentGridPosition = (PictureBox)FindGridPosition(boxPosition[0], boxPosition[1]);                   
+                    BringBackDoor(currentGridPosition, boxPosition[0], boxPosition[1]);
+                    boxNumber--;
+                    RemoveBox();
+                    //end game if all boxes are gone
+                    if (boxNumber == 0)
+                    {
+                        MessageBox.Show("You Won!");
+                        DeleteGrid();
+                    }
+                }
+                else
+                {
+                    //if the box lands on a door that isn't that colour
+                    //don't remove the door, but place it on top of the door
+                    //so when it moves again the door will stay there
+                    gameGrid[boxPosition[0]][boxPosition[1]] += boxSelected;
+                }              
+            }
+            else
+            {
+                //and change game grid to box selected
+                gameGrid[boxPosition[0]][boxPosition[1]] = boxSelected;
+            }
+            //add the moves          
+            numberOfMoves++;
+            txtNumberOfMoves.Text = numberOfMoves.ToString();
+            ToggleMovementButtons(true);           
+        }
+
+        //grabs the picture box 
+        private Control FindGridPosition(int positionX, int positionY)
         {
             foreach (Control control in Controls)
             {
-                if (control.Name.StartsWith("grid" + futurePosition[0].ToString() + futurePosition[1].ToString()) && control.Name.Contains("Empty"))
+                if (control.Name == "grid" + positionX.ToString() + positionY.ToString())
                 {
-                    ((PictureBox)Controls[boxSelected]).Image = null;
-                    ((PictureBox)Controls[boxSelected]).Name = boxPosition[0].ToString() + boxPosition[1].ToString() + "Empty";
-                    boxPosition[0] = futurePosition[0];
-                    boxPosition[1] = futurePosition[1];
-                    (control as PictureBox).Name = boxSelected;
-                    switch (boxColour)
-                    {
-                        case "Red":
-                            (control as PictureBox).Image = Properties.Resources.redBox;
-                            break;
-                        case "Blue":
-                            (control as PictureBox).Image = Properties.Resources.blueBox;
-                            break;
-                        case "Yellow":
-                            (control as PictureBox).Image = Properties.Resources.yellowBox;
-                            break;
-                        case "Green":
-                            (control as PictureBox).Image = Properties.Resources.greenBox;
-                            break;
-                    }
-                    numberOfMoves++;
-                    txtNumberOfMoves.Text = numberOfMoves.ToString() + boxPosition[0].ToString() + boxPosition[1].ToString();
-                }
-                //when a box goes to a door it checks if it is the same colour and if so,
-                //removes the box
-                //if all boxes are removed then display win message
-                else if (control.Name.StartsWith("grid" + futurePosition[0].ToString() + futurePosition[1].ToString()) && control.Name.Contains("Door"))
-                {
-                    string doorColour = control.Name.Substring(6, 6);
-                    doorColour.Replace("-", "");
-                    if (boxColour == doorColour)
-                    {
-                        ((PictureBox)Controls[boxSelected]).Image = null;
-                        ((PictureBox)Controls[boxSelected]).Name = boxPosition + "Empty";
-                        boxSelected = "";
-                        boxNumber -= 1;
-                        if (boxNumber == 0)
-                        {
-                            MessageBox.Show("You're Winner!");
-                            DeleteGrid();
-                        }
-                    }
+                    return (control as PictureBox);
                 }
             }
-            direction = Direction.NONE;
+            return null;
         }
-  
+        //places the correct colour of box sprite in the new location
+        private void MoveBox(PictureBox gridPosition)
+        {
+            switch (boxColour)
+            {
+                case "Red":
+                    gridPosition.Image = Properties.Resources.redBox;
+                    break;
+                case "Blue":
+                    gridPosition.Image = Properties.Resources.blueBox;
+                    break;
+                case "Yellow":
+                    gridPosition.Image = Properties.Resources.yellowBox;
+                    break;
+                case "Green":
+                    gridPosition.Image = Properties.Resources.greenBox;
+                    break;
+            }
+        }
+        //runs when a box leaves a door position
+        private void BringBackDoor(PictureBox gridPosition, int row, int column)
+        {
+            string doorColour = gameGrid[row][column].Substring(0, 6).Replace("-", "");
+            switch (doorColour)
+            {
+                case "Red":
+                    gridPosition.Image = Properties.Resources.redDoor;
+                    gameGrid[row][column] = "Red---Door";
+                    break;
+                case "Blue":
+                    gridPosition.Image = Properties.Resources.blueDoor;
+                    gameGrid[row][column] = "Blue--Door";
+                    break;
+                case "Yellow":
+                    gridPosition.Image = Properties.Resources.yellowDoor;
+                    gameGrid[row][column] = "YellowDoor";
+                    break;
+                case "Green":
+                    gridPosition.Image = Properties.Resources.greenDoor;
+                    gameGrid[row][column] = "Green-Door";
+                    break;
+            }
+        }
+
         // sets the first two lines in the file as the grid size
         // then reads the picture code and assigns a picture to the 
         // tile that coresponds to the code
@@ -156,7 +269,7 @@ namespace MDoumaAssignment1
                     for (int j = 0; j < columnNumber; j++)
                     {
                         PictureBox grid = new PictureBox();
-                        
+
                         grid.Name = "grid" + reader.ReadLine() + reader.ReadLine();
                         grid.Size = new Size(TILESIZE, TILESIZE);
                         grid.BackColor = Color.Gray;
@@ -170,62 +283,52 @@ namespace MDoumaAssignment1
                             case "0":
                                 grid.Image = null;
                                 emptyNumber++;
-                                grid.Name += "Empty" + emptyNumber;
                                 gameGrid[i][j] = "Empty";
                                 break;
                             case "1":
                                 grid.Image = Properties.Resources.wall;
                                 wallNumber++;
-                                grid.Name += "Wall" + wallNumber;
                                 gameGrid[i][j] = "Wall";
                                 break;
                             case "2":
                                 grid.Image = Properties.Resources.redDoor;
                                 doorNumber++;
-                                grid.Name += "Red---Door" + doorNumber;
                                 gameGrid[i][j] = "Red---Door";
                                 break;
                             case "3":
                                 grid.Image = Properties.Resources.blueDoor;
                                 doorNumber++;
-                                grid.Name += "Blue--Door" + doorNumber;
                                 gameGrid[i][j] = "Blue--Door";
                                 break;
                             case "4":
                                 grid.Image = Properties.Resources.yellowDoor;
                                 doorNumber++;
-                                grid.Name += "YellowDoor" + doorNumber;
                                 gameGrid[i][j] = "YellowDoor";
                                 break;
                             case "5":
                                 grid.Image = Properties.Resources.greenDoor;
                                 doorNumber++;
-                                grid.Name += "Green-Door" + doorNumber;
                                 gameGrid[i][j] = "Green-Door";
                                 break;
                             case "6":
                                 grid.Image = Properties.Resources.redBox;
                                 boxNumber++;
-                                grid.Name += "Red---Box" + boxNumber;
-                                gameGrid[i][j] = "Red---Box";
+                                gameGrid[i][j] = "Red---Box" + boxNumber;
                                 break;
                             case "7":
                                 grid.Image = Properties.Resources.blueBox;
                                 boxNumber++;
-                                grid.Name += "Blue--Box" + boxNumber;
-                                gameGrid[i][j] = "Blue--Box";
+                                gameGrid[i][j] = "Blue--Box" + boxNumber;
                                 break;
                             case "8":
                                 grid.Image = Properties.Resources.yellowBox;
                                 boxNumber++;
-                                grid.Name += "YellowBox" + boxNumber;
-                                gameGrid[i][j] = "YellowBox";
+                                gameGrid[i][j] = "YellowBox" + boxNumber;
                                 break;
                             case "9":
                                 grid.Image = Properties.Resources.greenBox;
                                 boxNumber++;
-                                grid.Name += "Green-Box" + boxNumber;
-                                gameGrid[i][j] = "Green-Box";
+                                gameGrid[i][j] = "Green-Box" + boxNumber;
                                 break;
                         }
                         Controls.Add(grid);
@@ -240,7 +343,7 @@ namespace MDoumaAssignment1
                 MessageBox.Show($"Problem creating grid: {ex}");
             }
             finally
-            {              
+            {
                 reader.Close();
             }
 
@@ -251,16 +354,19 @@ namespace MDoumaAssignment1
         //clicked on a box
         private void selectBox_Click(object sender, EventArgs e)
         {
-            if ((sender as PictureBox).Name.Contains("Box"))
+            int[] tileSelected = new int[2];
+            tileSelected[0] = int.Parse((sender as PictureBox).Name.Substring(4, 1));
+            tileSelected[1] = int.Parse((sender as PictureBox).Name.Substring(5, 1));
+            if (gameGrid[tileSelected[0]][tileSelected[1]].Contains("Box"))
             {
-                boxSelected = ((sender as PictureBox).Name);
-                boxPosition[0] = int.Parse(boxSelected.Substring(4, 1));
-                boxPosition[1] = int.Parse(boxSelected.Substring(5, 1));
-                boxColour = boxSelected.Substring(6, 6);
-                boxColour.Replace("-", "");
+                boxSelected = gameGrid[tileSelected[0]][tileSelected[1]];
+                boxPosition[0] = tileSelected[0];
+                boxPosition[1] = tileSelected[1];
+                boxColour = boxSelected.Substring(0, 6).Replace("-", "");
 
                 lblSelectedBox.Text = "Selected: " + boxColour + " box";
-            }          
+                ToggleMovementButtons(true);
+            }
         }
 
         //Closes the form
@@ -304,120 +410,142 @@ namespace MDoumaAssignment1
                     break;
             }
         }
- 
+        //on movement, loop through movement method
+        //until box hits something, then call stop movement,
+        //buttons should be disabled while box is in motion
         private void btnUp_Click(object sender, EventArgs e)
         {
-            if (boxSelected != null && boxSelected != "")
+            if (boxSelected != "")
             {
-                direction = Direction.UP;
-                int[] futurePosition = FuturePosition();
-                Movement(futurePosition, boxColour);
+                ToggleMovementButtons(false);
+                FuturePositionUp();
             }
         }
 
         private void btnDown_Click(object sender, EventArgs e)
         {
-            if (boxSelected != null && boxSelected != "")
+            if (boxSelected != "")
             {
-                direction = Direction.DOWN;
-                int[] futurePosition = FuturePosition();
-                Movement(futurePosition, boxColour);
+                ToggleMovementButtons(false);
+                FuturePositionDown();
             }
         }
 
         private void btnLeft_Click(object sender, EventArgs e)
         {
-            if (boxSelected != null && boxSelected != "")
+            if (boxSelected != "")
             {
-                direction = Direction.LEFT;
-                int[] futurePosition = FuturePosition();
-                Movement(futurePosition, boxColour);
+                ToggleMovementButtons(false);
+                FuturePositionLeft();
             }
         }
 
         private void btnRight_Click(object sender, EventArgs e)
         {
-            if (boxSelected != null && boxSelected != "")
+            if (boxSelected != "")
             {
-                direction = Direction.RIGHT;
-                int[] futurePosition = FuturePosition();
-                Movement(futurePosition, boxColour);
+                ToggleMovementButtons(false);
+                FuturePositionRight();
             }
         }
 
         //looks at selected box position and desired direction and 
         //returns grid position of the space beside the wall that it hits or the door
-        private int[] FuturePosition()
+        private void FuturePositionDown()
         {
-            int[] futurePosition = new int[2];
-            int newPosition = 0;
+            int futurePosition;
+            int i = boxPosition[0];
 
-            if(direction == Direction.DOWN || direction == Direction.UP)
+            //make sure we dont go out of bounds
+            //stop if we hit a wall or other box
+            if ((i + 1 < rowNumber) && (gameGrid[i + 1][boxPosition[1]] != "Wall" && !gameGrid[i + 1][boxPosition[1]].Contains("Box")))
             {
-                
-                for (int i = boxPosition[0]; i < rowNumber; i++)
-                {
-                    futurePosition[0] = newPosition;
-                    futurePosition[1] = boxPosition[1];
-                    //make sure we dont go out of bounds
-                    if ((i + 1 > rowNumber - 1 && direction == Direction.DOWN) || (i - 1 < 0 && direction == Direction.UP))
-                    {
-                        break;
-                    }
-                    
-                    if (direction == Direction.UP)
-                    {
-                        if (gameGrid[i - 1][boxPosition[1]] != "Empty")
-                        {
-                            break;
-                        }
-                        newPosition = i - 1;
-                    }
-                    else if (direction == Direction.DOWN)
-                    {                       
-                        if (gameGrid[i + 1][boxPosition[1]] != "Empty")
-                        {
-                            break;
-                        }
-                        newPosition = i + 1;
-                    }
-                
-                }
+                futurePosition = i + 1;
+                Movement(futurePosition, Direction.DOWN);
             }
             else
             {
-                
-                for (int i = boxPosition[1]; i < columnNumber; i++)
-                {
-                    futurePosition[0] = boxPosition[0];
-                    futurePosition[1] = newPosition;
-                    
-                    //make sure we dont go out of bounds
-                    if ((i + 1 > columnNumber - 1 && direction == Direction.RIGHT) || (i - 1 < 0 && direction == Direction.LEFT))
-                    {
-                        break;
-                    }                
-                    if (direction == Direction.LEFT)
-                    {                       
-                        if (gameGrid[boxPosition[0]][i - 1] != "Empty")
-                        {
-                                break;
-                        }
-                        newPosition = i - 1;
-                    }
-                    else if (direction == Direction.RIGHT)
-                    {                
-                        if (gameGrid[boxPosition[0]][i + 1] != "Empty")
-                        {
-                                break;
-                        }
-                        newPosition = i + 1;
-                    }
-                    
-                }
+                StopMovement();
             }
-                    
-            return futurePosition;
+        }
+        private void FuturePositionUp()
+        {
+            int futurePosition;
+            int i = boxPosition[0];
+            //make sure we dont go out of bounds
+            if ((i - 1 >= 0) && (gameGrid[i - 1][boxPosition[1]] != "Wall" && !gameGrid[i - 1][boxPosition[1]].Contains("Box")))
+            {
+                futurePosition = i - 1;
+                Movement(futurePosition, Direction.UP);
+            }
+            else
+            {
+                StopMovement();
+            }
+        }
+        private void FuturePositionRight()
+        {
+            int futurePosition;
+            int i = boxPosition[1];
+            //make sure we dont go out of bounds
+            if ((i + 1 < columnNumber) && (gameGrid[boxPosition[0]][i + 1] != "Wall" && !gameGrid[boxPosition[0]][i + 1].Contains("Box")))
+            {
+                futurePosition = i + 1;
+                Movement(futurePosition, Direction.RIGHT);
+            }
+            else
+            {
+                StopMovement();
+            }
+        }
+        private void FuturePositionLeft()
+        {
+            int futurePosition;
+            int i = boxPosition[1];
+            
+            //make sure we dont go out of bounds or through walls
+            if ((i - 1 >= 0) && (gameGrid[boxPosition[0]][i - 1] != "Wall" && !gameGrid[boxPosition[0]][i - 1].Contains("Box")))
+            {
+                futurePosition = i - 1;
+                Movement(futurePosition, Direction.LEFT);
+            }
+            else
+            {
+                StopMovement();
+            }
+        }
+
+        //disables or enables movement buttons
+        private void ToggleMovementButtons(bool isEnabled)
+        {
+            btnDown.Enabled = isEnabled;
+            btnLeft.Enabled = isEnabled;
+            btnRight.Enabled = isEnabled;
+            btnUp.Enabled = isEnabled;
+        }
+
+        //pauses to let animation play
+        private void WaitMovement(int milliseconds)
+        {
+            //dont bother if there is no time given
+            if (milliseconds == 0 || milliseconds < 0) return;
+
+            //start wait timer"
+            movementTimer.Interval = milliseconds;
+            movementTimer.Enabled = true;
+            movementTimer.Start();
+
+            movementTimer.Tick += (s, e) =>
+            {
+                movementTimer.Enabled = false;
+                movementTimer.Stop();
+                // stop wait timer
+            };
+
+            while (movementTimer.Enabled)
+            {
+                Application.DoEvents();
+            }
         }
     }
 }

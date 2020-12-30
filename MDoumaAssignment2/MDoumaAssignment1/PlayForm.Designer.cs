@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -39,6 +40,7 @@
             this.btnDown = new System.Windows.Forms.Button();
             this.btnRight = new System.Windows.Forms.Button();
             this.lblSelectedBox = new System.Windows.Forms.Label();
+            this.movementTimer = new System.Windows.Forms.Timer(this.components);
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -49,7 +51,7 @@
             this.fileToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1067, 30);
+            this.menuStrip1.Size = new System.Drawing.Size(1067, 28);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -59,7 +61,7 @@
             this.loadToolStripMenuItem,
             this.closeToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(46, 26);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(46, 24);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // loadToolStripMenuItem
@@ -83,7 +85,7 @@
             // txtNumberOfMoves
             // 
             this.txtNumberOfMoves.Location = new System.Drawing.Point(16, 49);
-            this.txtNumberOfMoves.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtNumberOfMoves.Margin = new System.Windows.Forms.Padding(4);
             this.txtNumberOfMoves.Name = "txtNumberOfMoves";
             this.txtNumberOfMoves.ReadOnly = true;
             this.txtNumberOfMoves.Size = new System.Drawing.Size(132, 22);
@@ -92,7 +94,7 @@
             // btnUp
             // 
             this.btnUp.Location = new System.Drawing.Point(16, 123);
-            this.btnUp.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnUp.Margin = new System.Windows.Forms.Padding(4);
             this.btnUp.Name = "btnUp";
             this.btnUp.Size = new System.Drawing.Size(67, 62);
             this.btnUp.TabIndex = 2;
@@ -103,7 +105,7 @@
             // btnLeft
             // 
             this.btnLeft.Location = new System.Drawing.Point(16, 192);
-            this.btnLeft.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnLeft.Margin = new System.Windows.Forms.Padding(4);
             this.btnLeft.Name = "btnLeft";
             this.btnLeft.Size = new System.Drawing.Size(67, 62);
             this.btnLeft.TabIndex = 3;
@@ -114,7 +116,7 @@
             // btnDown
             // 
             this.btnDown.Location = new System.Drawing.Point(91, 123);
-            this.btnDown.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnDown.Margin = new System.Windows.Forms.Padding(4);
             this.btnDown.Name = "btnDown";
             this.btnDown.Size = new System.Drawing.Size(67, 62);
             this.btnDown.TabIndex = 4;
@@ -125,7 +127,7 @@
             // btnRight
             // 
             this.btnRight.Location = new System.Drawing.Point(91, 192);
-            this.btnRight.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnRight.Margin = new System.Windows.Forms.Padding(4);
             this.btnRight.Name = "btnRight";
             this.btnRight.Size = new System.Drawing.Size(67, 62);
             this.btnRight.TabIndex = 5;
@@ -155,7 +157,7 @@
             this.Controls.Add(this.txtNumberOfMoves);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "PlayForm";
             this.Text = "PlayForm";
             this.menuStrip1.ResumeLayout(false);
@@ -178,5 +180,6 @@
         private System.Windows.Forms.Button btnDown;
         private System.Windows.Forms.Button btnRight;
         private System.Windows.Forms.Label lblSelectedBox;
+        private System.Windows.Forms.Timer movementTimer;
     }
 }
